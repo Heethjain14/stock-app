@@ -1,50 +1,68 @@
-# Welcome to your Expo app 👋
+# StockApp
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+QR-based inventory app for a clothing business, migrated from Google Sheets to Supabase.
 
-## Get started
+Workflow: **create an item** (category, size, color, lot, ...) -> **print its QR code** -> **scan the QR** to receive, add, remove or set stock -> **search records** and see low-stock items and movement history.
 
-1. Install dependencies
+## Stack
 
-   ```bash
-   npm install
-   ```
+- Expo SDK 55 / React Native 0.83 / TypeScript
+- expo-router (file-based navigation), expo-camera (QR scanning), react-native-qrcode-svg
+- Supabase: Postgres (items + stock movements) and Auth
 
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+## Quick start
 
 ```bash
-npm run reset-project
+npm install
+cp .env.example .env        # then fill in your Supabase URL and anon key
+# create the database and auth users: see docs/SUPABASE_SETUP.md
+npx expo start
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Open the app in Expo Go / a dev build (`a` for Android, `i` for iOS, `w` for web).
 
-## Learn more
+## Scripts
 
-To learn more about developing your project with Expo, look at the following resources:
+| Command | What it does |
+| --- | --- |
+| `npm start` | Start the Expo dev server |
+| `npm run android` / `ios` / `web` | Start and open on a platform |
+| `npm run lint` | ESLint via `expo lint` |
+| `npm run typecheck` | `tsc --noEmit` |
+| `npm test` | Jest (jest-expo) unit tests |
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+CI (`.github/workflows/ci.yml`) runs typecheck, lint and tests on every push and PR.
 
-## Join the community
+## Project structure
 
-Join our community of developers creating universal apps.
+```
+app/                 expo-router screens (index, create-qr, scan, records, ...)
+src/
+  api/               Supabase data access (items, movements)
+  auth/              session handling and sign-in
+  components/ui/     shared UI components
+  domain/            clothing categories, sizes, fabrics, etc.
+  lib/               Supabase client and helpers
+  theme/             colors, spacing, typography
+  types/             shared types (StockItem, stockStatus, ...)
+supabase/            SQL schema, policies and migrations
+docs/                setup and operational docs
+scripts/             maintenance / migration scripts
+assets/              icons and splash images
+```
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## Building with EAS
+
+Build profiles live in `eas.json`:
+
+- `development`: dev client, internal distribution
+- `preview`: internal distribution (installable test builds)
+- `production`: store build, auto-incremented version
+
+```bash
+npm install -g eas-cli
+eas login
+eas build --profile preview --platform android
+```
+
+Set `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_ANON_KEY` as EAS environment variables/secrets so builds can reach Supabase.
