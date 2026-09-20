@@ -93,7 +93,6 @@ export default function CreateQR() {
         barcode: '', // generated inside createItem
         name: form.name.trim(),
         category: null,
-        gender: null,
         size: null,
         color: emptyToNull(form.color),
         fabric: null,

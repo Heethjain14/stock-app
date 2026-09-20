@@ -13,9 +13,6 @@ export const CATEGORIES = [
 export type Category = (typeof CATEGORIES)[number]['label'];
 export const CATEGORY_LABELS = CATEGORIES.map((c) => c.label) as Category[];
 
-export const GENDERS = ['Men', 'Women', 'Unisex', 'Boys', 'Girls'] as const;
-export type Gender = (typeof GENDERS)[number];
-
 export const SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', 'Free size'] as const;
 
 export const FABRICS = [

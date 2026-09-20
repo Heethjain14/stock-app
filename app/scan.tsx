@@ -1,10 +1,10 @@
 import * as Haptics from 'expo-haptics';
-import { CameraView, useCameraPermissions } from 'expo-camera';
 import { router, useFocusEffect, type Href } from 'expo-router';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Linking, StyleSheet, Text, View } from 'react-native';
+import { KeyboardAvoidingView, Linking, Platform, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getItemByBarcode, StockApiError } from '../src/api/stock';
+import { CameraScanner } from '../src/components/CameraScanner';
 import {
   Button,
   Card,
@@ -13,7 +13,9 @@ import {
   InlineBanner,
   LoadingState,
   Screen,
+  TextField,
 } from '../src/components/ui';
+import { useScanPermission } from '../src/hooks/useScanPermission';
 import { colors, layout, radii, spacing, typography } from '../src/theme';
 import { isStockBarcode } from '../src/utils/generateId';
 
@@ -29,11 +31,15 @@ const SAME_CODE_MS = 1500;
 
 export default function Scan() {
   const insets = useSafeAreaInsets();
-  const [permission, requestPermission] = useCameraPermissions();
+  const [permission, requestPermission] = useScanPermission();
   const [phase, setPhase] = useState<Phase>('scanning');
   const [torch, setTorch] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState('');
+  const [cameraError, setCameraError] = useState<string | null>(null);
+  const [cameraKey, setCameraKey] = useState(0);
+  const [manualOpen, setManualOpen] = useState(false);
+  const [manualCode, setManualCode] = useState('');
 
   const busy = useRef(false);
   const lastCode = useRef<{ data: string; at: number } | null>(null);
@@ -98,8 +104,8 @@ export default function Scan() {
     }
   }, []);
 
-  const onBarcodeScanned = useCallback(
-    ({ data }: { data: string }) => {
+  const onCode = useCallback(
+    (data: string) => {
       if (busy.current) return;
       const now = Date.now();
       const last = lastCode.current;
@@ -114,6 +120,22 @@ export default function Scan() {
     },
     [lookup, showNotice],
   );
+
+  const submitManual = useCallback(() => {
+    const code = manualCode.trim().toUpperCase();
+    if (!isStockBarcode(code)) {
+      showNotice('Not a StockApp label code');
+      return;
+    }
+    setManualOpen(false);
+    setManualCode('');
+    lookup(code);
+  }, [manualCode, lookup, showNotice]);
+
+  const retryCamera = useCallback(() => {
+    setCameraError(null);
+    setCameraKey((k) => k + 1);
+  }, []);
 
   if (!permission) {
     return (
@@ -162,12 +184,12 @@ export default function Scan() {
 
   return (
     <View style={styles.root}>
-      <CameraView
-        style={StyleSheet.absoluteFill}
-        facing="back"
-        enableTorch={torch}
-        barcodeScannerSettings={{ barcodeTypes: ['qr'] }}
-        onBarcodeScanned={armed ? onBarcodeScanned : undefined}
+      <CameraScanner
+        key={cameraKey}
+        armed={armed}
+        torch={torch}
+        onCode={onCode}
+        onError={setCameraError}
       />
 
       {/* Scrim with a clear window */}
@@ -217,7 +239,50 @@ export default function Scan() {
       ) : null}
 
       {/* Bottom status cards */}
-      <View style={[styles.bottom, { paddingBottom: insets.bottom + spacing.lg }]}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={[styles.bottom, { paddingBottom: insets.bottom + spacing.lg }]}
+      >
+        {phase === 'scanning' && cameraError ? (
+          <Card style={styles.stacked}>
+            <Text style={styles.cardTitle}>Camera unavailable</Text>
+            <Text style={styles.cardBody}>{cameraError}</Text>
+            <View style={styles.cardActions}>
+              <Button title="Try again" icon="refresh" onPress={retryCamera} />
+            </View>
+          </Card>
+        ) : null}
+
+        {phase === 'scanning' && manualOpen ? (
+          <Card style={styles.stacked}>
+            <TextField
+              label="Label code"
+              value={manualCode}
+              onChangeText={setManualCode}
+              placeholder="STOCK-TOP-AB12"
+              autoCapitalize="characters"
+              autoCorrect={false}
+              autoFocus
+              returnKeyType="go"
+              onSubmitEditing={submitManual}
+            />
+            <View style={styles.cardActions}>
+              <Button title="Cancel" variant="secondary" onPress={() => setManualOpen(false)} />
+              <Button title="Look up" icon="search" onPress={submitManual} />
+            </View>
+          </Card>
+        ) : null}
+
+        {phase === 'scanning' && !manualOpen ? (
+          <Button
+            title="Type code instead"
+            icon="keypad-outline"
+            variant="secondary"
+            fullWidth
+            onPress={() => setManualOpen(true)}
+          />
+        ) : null}
+
         {phase === 'lookup' ? (
           <View style={styles.lookupPill}>
             <LoadingState message="Looking up item…" />
@@ -256,7 +321,7 @@ export default function Scan() {
             </View>
           </Card>
         ) : null}
-      </View>
+      </KeyboardAvoidingView>
     </View>
   );
 }
@@ -343,6 +408,7 @@ const styles = StyleSheet.create({
     borderRadius: radii.lg,
     paddingVertical: spacing.sm,
   },
+  stacked: { marginBottom: spacing.md },
   cardTitle: { ...typography.title, color: colors.text },
   cardBody: { ...typography.body, color: colors.textSecondary, marginTop: spacing.xs },
   cardActions: { flexDirection: 'row', gap: spacing.md, marginTop: spacing.lg },

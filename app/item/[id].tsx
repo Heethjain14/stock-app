@@ -23,13 +23,11 @@ import {
 import {
   CATEGORY_LABELS,
   FABRICS,
-  GENDERS,
   QUALITIES,
   SEASONS,
   SIZES,
   UNITS,
   type Category,
-  type Gender,
   type Season,
 } from '../../src/domain/clothing';
 import { colors, radii, spacing, typography } from '../../src/theme';
@@ -64,7 +62,6 @@ function withCurrent(options: readonly string[], current: string | null): string
 type Draft = {
   name: string;
   category: Category | null;
-  gender: Gender | null;
   size: string | null;
   color: string;
   fabric: string | null;
@@ -79,7 +76,6 @@ function draftFromItem(item: StockItem): Draft {
   return {
     name: item.name,
     category: item.category,
-    gender: item.gender,
     size: item.size,
     color: item.color ?? '',
     fabric: item.fabric,
@@ -277,7 +273,6 @@ export default function ItemDetailScreen() {
       const patch: Partial<NewStockItem> = {
         name: draft.name.trim(),
         category: draft.category,
-        gender: draft.gender,
         size: draft.size,
         color: emptyToNull(draft.color),
         fabric: draft.fabric,
@@ -345,7 +340,6 @@ export default function ItemDetailScreen() {
     if (!item) return [];
     const rows: { label: string; value: string }[] = [
       { label: 'Category', value: item.category ?? '' },
-      { label: 'Gender', value: item.gender ?? '' },
       { label: 'Size', value: item.size ?? '' },
       { label: 'Color', value: item.color ?? '' },
       { label: 'Fabric', value: item.fabric ?? '' },
@@ -417,13 +411,6 @@ export default function ItemDetailScreen() {
                 options={CATEGORY_LABELS}
                 value={draft.category}
                 onChange={(v) => setField('category', v)}
-              />
-            </FieldGroup>
-            <FieldGroup label="Gender">
-              <ChipGroup<Gender>
-                options={GENDERS}
-                value={draft.gender}
-                onChange={(v) => setField('gender', v)}
               />
             </FieldGroup>
             <FieldGroup label="Size">

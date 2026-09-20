@@ -2,7 +2,6 @@ import {
   CATEGORIES,
   CATEGORY_LABELS,
   FABRICS,
-  GENDERS,
   QUALITIES,
   SEASONS,
   SIZES,
@@ -30,7 +29,6 @@ describe('CATEGORIES', () => {
 
 describe('option lists', () => {
   const lists: Record<string, readonly string[]> = {
-    GENDERS,
     SIZES,
     FABRICS,
     SEASONS,

@@ -33,7 +33,10 @@ export function Screen({
   const pad = padded ? { paddingHorizontal: layout.screenPadding } : null;
   return (
     <SafeAreaView style={styles.root} edges={edges}>
-      <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <KeyboardAvoidingView
+        style={[styles.flex, styles.frame]}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
         {header}
         {scroll ? (
           <ScrollView
@@ -55,5 +58,7 @@ export function Screen({
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.background },
   flex: { flex: 1 },
+  // Fills a phone; on tablets/desktops the content stays a readable, centred column.
+  frame: { width: '100%', maxWidth: layout.maxContentWidth, alignSelf: 'center' },
   scrollContent: { paddingTop: spacing.lg, paddingBottom: spacing.xxl, gap: spacing.lg },
 });

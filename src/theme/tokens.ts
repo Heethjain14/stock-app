@@ -26,7 +26,7 @@ export const spacing = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32 } as cons
 
 export const radii = { sm: 8, md: 12, lg: 16, pill: 999 } as const;
 
-export const layout = { screenPadding: 16, minTouch: 44 } as const;
+export const layout = { screenPadding: 16, minTouch: 44, maxContentWidth: 640 } as const;
 
 export const typography = {
   display: { fontSize: 28, lineHeight: 34, fontWeight: '700' },

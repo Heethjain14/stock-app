@@ -42,7 +42,7 @@ function parseAmount(raw: string): number | null {
 }
 
 function specLine(item: StockItem): string {
-  return [item.category, item.gender, item.size, item.color, item.fabric]
+  return [item.category, item.size, item.color, item.fabric]
     .filter((v): v is string => typeof v === 'string' && v.trim().length > 0)
     .join(' · ');
 }

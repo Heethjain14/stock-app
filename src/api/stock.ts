@@ -69,7 +69,6 @@ export async function listItems(
       if (q) query = query.or(`name.ilike."%${q}%",barcode.ilike."%${q}%"`);
     }
     if (filters.category) query = query.eq('category', filters.category);
-    if (filters.gender) query = query.eq('gender', filters.gender);
     if (filters.size) query = query.eq('size', filters.size);
     if (filters.color) query = query.eq('color', filters.color);
     if (filters.lot_number) query = query.eq('lot_number', filters.lot_number);
@@ -83,8 +82,6 @@ export async function listItems(
       query = query.gt('quantity', 0).lte('quantity', DEFAULT_LOW_STOCK_THRESHOLD);
     } else if (filters.status === 'out') {
       query = query.eq('quantity', 0);
-    } else if (filters.status === 'pending') {
-      query = query.is('quantity', null);
     }
 
     const { data, error, count } = await query
@@ -226,17 +223,15 @@ export async function getDashboardStats(): Promise<{
   totalItems: number;
   lowStock: number;
   outOfStock: number;
-  notReceived: number;
 }> {
   try {
-    const [totalItems, lowStock, outOfStock, notReceived] = await Promise.all([
+    const [totalItems, lowStock, outOfStock] = await Promise.all([
       countItems((q) => q),
       // Simplification: default threshold (see listItems); out-of-stock (0) is counted separately.
       countItems((q) => q.gt('quantity', 0).lte('quantity', DEFAULT_LOW_STOCK_THRESHOLD)),
       countItems((q) => q.eq('quantity', 0)),
-      countItems((q) => q.is('quantity', null)),
     ]);
-    return { totalItems, lowStock, outOfStock, notReceived };
+    return { totalItems, lowStock, outOfStock };
   } catch (e) {
     throw toApiError(e, 'Could not load dashboard stats.');
   }

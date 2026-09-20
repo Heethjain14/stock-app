@@ -1,4 +1,4 @@
-import type { Category, Gender, Season } from '../domain/clothing';
+import type { Category, Season } from '../domain/clothing';
 
 // quantity === null means "not received yet" (QR created, stock never counted).
 export type StockItem = {
@@ -6,7 +6,6 @@ export type StockItem = {
   barcode: string;
   name: string;
   category: Category | null;
-  gender: Gender | null;
   fabric: string | null;
   size: string | null;
   color: string | null;
@@ -44,13 +43,12 @@ export type StockMovement = {
 export type StockFilters = {
   search?: string;
   category?: Category | null;
-  gender?: Gender | null;
   size?: string | null;
   color?: string | null;
   lot_number?: string | null;
   quality?: string | null;
   lowStockOnly?: boolean;
-  status?: 'low' | 'out' | 'pending';
+  status?: 'low' | 'out';
 };
 
 export type StockStatus = 'not_received' | 'out' | 'low' | 'ok';

@@ -69,7 +69,7 @@ export default function Home() {
   };
 
   const go = (href: string) => router.push(href as Href);
-  const goRecords = (filter?: 'low' | 'out' | 'pending') =>
+  const goRecords = (filter?: 'low' | 'out') =>
     go(filter ? `/records?filter=${filter}` : '/records');
 
   const val = (n: number | undefined): string | number => (stats ? (n ?? 0) : '-');
@@ -139,13 +139,6 @@ export default function Home() {
                 icon="close-circle-outline"
                 tone="danger"
                 onPress={() => goRecords('out')}
-              />
-              <StatTile
-                label="Not received"
-                value={val(stats?.notReceived)}
-                icon="time-outline"
-                tone="neutral"
-                onPress={() => goRecords('pending')}
               />
             </View>
           </View>

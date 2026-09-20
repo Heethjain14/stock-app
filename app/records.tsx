@@ -25,13 +25,13 @@ import {
   SectionLabel,
   StockStatusBadge,
 } from '../src/components/ui';
-import { CATEGORY_LABELS, GENDERS, QUALITIES, SIZES, type Category, type Gender } from '../src/domain/clothing';
+import { CATEGORY_LABELS, QUALITIES, SIZES, type Category } from '../src/domain/clothing';
 import { colors, layout, radii, spacing, typography } from '../src/theme';
 import type { StockFilters, StockItem } from '../src/types/stock';
 
 const PAGE_SIZE = 20;
 
-type QuickFilter = 'all' | 'low' | 'out' | 'pending';
+type QuickFilter = 'all' | 'low' | 'out';
 type LoadMode = 'reset' | 'silent' | 'refresh' | 'more';
 type Status = 'loading' | 'ready' | 'error';
 
@@ -39,12 +39,11 @@ const QUICK_OPTIONS: { value: QuickFilter; label: string }[] = [
   { value: 'all', label: 'All' },
   { value: 'low', label: 'Low stock' },
   { value: 'out', label: 'Out of stock' },
-  { value: 'pending', label: 'Not received' },
 ];
 
 function parseQuick(param: string | string[] | undefined): QuickFilter {
   const v = Array.isArray(param) ? param[0] : param;
-  return v === 'low' || v === 'out' || v === 'pending' ? v : 'all';
+  return v === 'low' || v === 'out' ? v : 'all';
 }
 
 type Params = {
@@ -94,7 +93,6 @@ export default function RecordsScreen() {
   const [search, setSearch] = useState('');
   const [quick, setQuick] = useState<QuickFilter>(() => parseQuick(filterParam));
   const [category, setCategory] = useState<Category | null>(null);
-  const [gender, setGender] = useState<Gender | null>(null);
   const [size, setSize] = useState<string | null>(null);
   const [color, setColor] = useState<string | null>(null);
   const [lot, setLot] = useState<string | null>(null);
@@ -141,7 +139,6 @@ export default function RecordsScreen() {
     filters: {
       search: search || undefined,
       category,
-      gender,
       size,
       color,
       lot_number: lot,
@@ -249,7 +246,6 @@ export default function RecordsScreen() {
     setSearch('');
     setQuick('all');
     setCategory(null);
-    setGender(null);
     setSize(null);
     setColor(null);
     setLot(null);
@@ -258,7 +254,7 @@ export default function RecordsScreen() {
 
   const activeCount =
     (quick !== 'all' ? 1 : 0) +
-    [category, gender, size, color, lot, quality].filter(Boolean).length;
+    [category, size, color, lot, quality].filter(Boolean).length;
   const hasActiveFilters = activeCount > 0 || search.length > 0;
 
   const goBack = useCallback(() => {
@@ -273,7 +269,7 @@ export default function RecordsScreen() {
 
   const renderItem = useCallback(
     ({ item }: { item: StockItem }) => {
-      const meta = [item.category, item.gender, item.size, item.color].filter(Boolean).join(' · ');
+      const meta = [item.category, item.size, item.color].filter(Boolean).join(' · ');
       return (
         <Card onPress={() => openItem(item.id)} accessibilityLabel={`Open ${item.name}`} style={styles.item}>
           <View style={styles.itemTop}>
@@ -349,10 +345,6 @@ export default function RecordsScreen() {
 
       {showPanel ? (
         <Card style={styles.panel}>
-          <View style={styles.panelGroup}>
-            <SectionLabel>Gender</SectionLabel>
-            <ChipGroup options={GENDERS} value={gender} onChange={setGender} />
-          </View>
           <View style={styles.panelGroup}>
             <SectionLabel>Size</SectionLabel>
             <ChipGroup options={sizeOptions} value={size} onChange={setSize} />
