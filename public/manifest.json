@@ -1,0 +1,13 @@
+{
+  "name": "StockApp",
+  "short_name": "StockApp",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "icons": [
+    { "src": "/apple-touch-icon.png", "sizes": "1024x1024", "type": "image/png", "purpose": "any" }
+  ]
+}
