@@ -1,7 +1,13 @@
 // app/create-qr.tsx
 // Flow: New item form -> createItem() -> QR success state (save to Photos / share).
 
-import { qrQuietZone, saveQrPng, shareQrPng } from '../src/utils/qrImage';
+import {
+  QR_SHARED_MESSAGE,
+  qrQuietZone,
+  SAVE_QR_LABEL,
+  saveQrPng,
+  shareQrPng,
+} from '../src/utils/qrImage';
 import { router, type Href } from 'expo-router';
 import React, { useRef, useState } from 'react';
 import { Platform, StyleSheet, Text, View } from 'react-native';
@@ -156,7 +162,7 @@ export default function CreateQR() {
           } else {
             setSaveMessage({
               tone: 'success',
-              text: result === 'saved' ? 'QR saved to your Photos.' : 'QR image ready. Choose where to save or share it.',
+              text: result === 'saved' ? 'QR saved to your Photos.' : QR_SHARED_MESSAGE,
             });
           }
         } catch (err) {
@@ -260,7 +266,7 @@ export default function CreateQR() {
 
         <View style={styles.actions}>
           <Button
-            title="Save QR to Photos"
+            title={SAVE_QR_LABEL}
             icon="download-outline"
             size="lg"
             fullWidth

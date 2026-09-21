@@ -1,4 +1,4 @@
-import { qrQuietZone, saveQrPng } from '../../src/utils/qrImage';
+import { QR_SHARED_MESSAGE, qrQuietZone, SAVE_QR_LABEL, saveQrPng } from '../../src/utils/qrImage';
 import { useFocusEffect, useLocalSearchParams, useRouter, type Href } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
@@ -320,7 +320,7 @@ export default function ItemDetailScreen() {
           } else {
             setQrMessage({
               tone: 'success',
-              text: result === 'saved' ? 'QR saved to your Photos.' : 'QR image ready. Choose where to save or share it.',
+              text: result === 'saved' ? 'QR saved to your Photos.' : QR_SHARED_MESSAGE,
             });
           }
         } catch (err) {
@@ -552,7 +552,7 @@ export default function ItemDetailScreen() {
             </Text>
             {qrMessage ? <InlineBanner tone={qrMessage.tone} message={qrMessage.text} /> : null}
             <Button
-              title="Save QR to Photos"
+              title={SAVE_QR_LABEL}
               icon="download-outline"
               variant="secondary"
               onPress={saveQr}

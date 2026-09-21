@@ -3,6 +3,13 @@ import { Platform } from 'react-native';
 
 export type QrSaveResult = 'saved' | 'denied' | 'shared';
 
+// Browsers download the PNG instead of saving to a photo library, so the wording differs.
+export const SAVE_QR_LABEL = Platform.OS === 'web' ? 'Download QR image' : 'Save QR to Photos';
+export const QR_SHARED_MESSAGE =
+  Platform.OS === 'web'
+    ? 'QR image downloaded. Check your Downloads folder.'
+    : 'QR image ready. Choose where to save or share it.';
+
 // Barcodes are short enough to always be a 21-module (version 1) QR, so 4 modules of white
 // border is about 19% of the code. Scanners need that border, and it must be part of the
 // image itself: a saved or shared PNG has no card padding around it, and on a dark background
