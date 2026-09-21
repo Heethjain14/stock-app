@@ -92,7 +92,8 @@ const styles = StyleSheet.create({
   boxSingle: { minHeight: layout.minTouch + 4, alignItems: 'center' },
   boxMulti: { alignItems: 'flex-start', paddingVertical: spacing.sm },
   readonly: { backgroundColor: colors.surfaceMuted },
-  input: { flex: 1, ...typography.body, color: colors.text, paddingVertical: spacing.sm },
+  // 16px avoids iOS zooming the page in on focus; minWidth 0 lets the field shrink inside a flex row.
+  input: { flex: 1, minWidth: 0, ...typography.body, fontSize: 16, color: colors.text, paddingVertical: spacing.sm },
   inputMulti: { minHeight: 88, textAlignVertical: 'top' },
   helper: { ...typography.caption, marginTop: spacing.xs },
 });
