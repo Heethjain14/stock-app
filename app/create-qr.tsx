@@ -1,7 +1,7 @@
 // app/create-qr.tsx
 // Flow: New item form -> createItem() -> QR success state (save to Photos / share).
 
-import { saveQrPng, shareQrPng } from '../src/utils/qrImage';
+import { qrQuietZone, saveQrPng, shareQrPng } from '../src/utils/qrImage';
 import { router, type Href } from 'expo-router';
 import React, { useRef, useState } from 'react';
 import { Platform, StyleSheet, Text, View } from 'react-native';
@@ -22,6 +22,7 @@ import { colors, radii, spacing, typography } from '../src/theme';
 import type { NewStockItem, StockItem } from '../src/types/stock';
 
 const QUALITY_OPTIONS: readonly string[] = QUALITIES;
+const QR_SIZE = 280; // fits a 360px-wide phone: 328px content width
 
 type FormState = {
   name: string;
@@ -231,7 +232,8 @@ export default function CreateQR() {
           <View style={styles.qrCard}>
             <QRCode
               value={created.barcode}
-              size={220}
+              size={QR_SIZE}
+              quietZone={qrQuietZone(QR_SIZE)}
               getRef={(r) => (qrRef.current = r)}
               backgroundColor={colors.surface}
               color={colors.text}
@@ -366,7 +368,7 @@ const styles = StyleSheet.create({
   qrWrap: { alignItems: 'center', gap: spacing.md },
   qrCard: {
     backgroundColor: colors.surface,
-    padding: spacing.lg,
+    overflow: 'hidden', // the QR carries its own white margin
     borderRadius: radii.lg,
     borderWidth: 1,
     borderColor: colors.border,

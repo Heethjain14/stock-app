@@ -3,6 +3,14 @@ import { Platform } from 'react-native';
 
 export type QrSaveResult = 'saved' | 'denied' | 'shared';
 
+// Barcodes are short enough to always be a 21-module (version 1) QR, so 4 modules of white
+// border is about 19% of the code. Scanners need that border, and it must be part of the
+// image itself: a saved or shared PNG has no card padding around it, and on a dark background
+// (e.g. WhatsApp dark mode) a code without it cannot be read.
+export function qrQuietZone(size: number): number {
+  return Math.round(size * 0.19);
+}
+
 // Browsers have no file system or photo library API, so on web we trigger a normal download.
 function downloadPngOnWeb(base64: string, barcode: string): void {
   const a = document.createElement('a');

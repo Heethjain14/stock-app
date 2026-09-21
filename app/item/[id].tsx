@@ -1,4 +1,4 @@
-import { saveQrPng } from '../../src/utils/qrImage';
+import { qrQuietZone, saveQrPng } from '../../src/utils/qrImage';
 import { useFocusEffect, useLocalSearchParams, useRouter, type Href } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
@@ -32,6 +32,8 @@ import {
 } from '../../src/domain/clothing';
 import { colors, radii, spacing, typography } from '../../src/theme';
 import type { MovementMode, NewStockItem, StockItem, StockMovement } from '../../src/types/stock';
+
+const QR_SIZE = 240; // fits a 360px-wide phone inside the card (296px content width)
 
 const MODE_LABELS: Record<MovementMode, string> = {
   receive: 'Received',
@@ -538,7 +540,8 @@ export default function ItemDetailScreen() {
             <View style={styles.qrFrame}>
               <QRCode
                 value={item.barcode}
-                size={180}
+                size={QR_SIZE}
+                quietZone={qrQuietZone(QR_SIZE)}
                 getRef={(r) => (qrRef.current = r)}
                 backgroundColor={colors.surface}
                 color={colors.text}
@@ -616,7 +619,7 @@ const styles = StyleSheet.create({
   detailValue: { ...typography.body, color: colors.text, flex: 1, textAlign: 'right' },
   qrBlock: { alignItems: 'center', gap: spacing.md },
   qrFrame: {
-    padding: spacing.md,
+    overflow: 'hidden', // the QR carries its own white margin
     borderRadius: radii.md,
     backgroundColor: colors.surface,
     borderWidth: 1,
