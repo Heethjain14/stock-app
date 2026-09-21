@@ -1,5 +1,5 @@
 import React, { useCallback, useRef, useState } from 'react';
-import { Alert, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Platform, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter, type Href } from 'expo-router';
 import { useAuth } from '../src/auth/AuthProvider';
@@ -53,18 +53,23 @@ export default function Home() {
     load();
   };
 
+  const runSignOut = () => {
+    Promise.resolve(signOut()).catch((e: any) => {
+      const message = e?.message ?? 'Please try again.';
+      // Alert.alert is a no-op on web (react-native-web), so use the browser dialogs there.
+      if (Platform.OS === 'web') window.alert(`Could not sign out\n\n${message}`);
+      else Alert.alert('Could not sign out', message);
+    });
+  };
+
   const confirmSignOut = () => {
+    if (Platform.OS === 'web') {
+      if (window.confirm('Are you sure you want to sign out?')) runSignOut();
+      return;
+    }
     Alert.alert('Sign out', 'Are you sure you want to sign out?', [
       { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Sign out',
-        style: 'destructive',
-        onPress: () => {
-          Promise.resolve(signOut()).catch((e: any) =>
-            Alert.alert('Could not sign out', e?.message ?? 'Please try again.'),
-          );
-        },
-      },
+      { text: 'Sign out', style: 'destructive', onPress: runSignOut },
     ]);
   };
 
