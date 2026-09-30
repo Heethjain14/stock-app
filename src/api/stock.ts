@@ -34,6 +34,11 @@ function toApiError(error: unknown, fallback: string): StockApiError {
     message = 'That record already exists.';
   } else if (e.code === '42501' || /row-level security|permission denied/i.test(raw)) {
     message = 'You do not have permission to do that.';
+  } else if (e.code === '23502') {
+    // not_null_violation: usually means a migration hasn't been run (e.g. a column that should
+    // now allow NULL, like stock_items.category, is still required in this database).
+    message =
+      'A required database field is missing a value. If you are the admin, check that every file in supabase/migrations has been run, in order, in the Supabase SQL Editor.';
   } else if (e.code === 'P0001' && raw) {
     // Business-rule errors raised by our own RPC (e.g. "already received").
     message = raw;

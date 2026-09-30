@@ -9,13 +9,15 @@ This app stores stock in Supabase (Postgres + login). Follow the steps in order.
 3. Choose the **region closest to your shop/warehouse** (e.g. Mumbai for India). It cannot be changed later.
 4. Plan: **Free** is fine to start. Click **Create new project** and wait a couple of minutes.
 
-## 2. Create the tables (run the migration)
+## 2. Create the tables (run the migrations)
+
+Run **every** file in `supabase/migrations/`, **in filename order** (`0001_...`, then `0002_...`, and so on as more are added). Skipping a later one is a common cause of "could not create the item" errors, because the app code and the database schema then disagree about which columns are required.
 
 ### Option A: SQL editor (easiest)
 
 1. In the dashboard open **SQL Editor > New query**.
-2. Open `supabase/migrations/0001_init.sql` from this repo, copy **all** of it, paste it, and click **Run**.
-3. You should see "Success. No rows returned". The script is safe to run again.
+2. Open `supabase/migrations/0001_init.sql` from this repo, copy **all** of it, paste it, and click **Run**. You should see "Success. No rows returned".
+3. Repeat step 2 for `supabase/migrations/0002_optional_category.sql`, and for any other `NNNN_*.sql` file added after it. Every script is safe to run again.
 
 ### Option B: Supabase CLI
 
