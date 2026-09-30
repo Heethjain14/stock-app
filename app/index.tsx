@@ -1,5 +1,5 @@
 import React, { useCallback, useRef, useState } from 'react';
-import { Alert, Platform, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Platform, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter, type Href } from 'expo-router';
 import { useAuth } from '../src/auth/AuthProvider';
@@ -10,7 +10,6 @@ import {
   Button,
   Card,
   Divider,
-  IconButton,
   InlineBanner,
   ListRow,
   Screen,
@@ -89,11 +88,16 @@ export default function Home() {
           right={
             <>
               {role ? <Badge label={role === 'admin' ? 'Admin' : 'Staff'} tone="info" /> : null}
-              <IconButton
-                icon="log-out-outline"
-                accessibilityLabel="Sign out"
+              <Pressable
                 onPress={confirmSignOut}
-              />
+                accessibilityRole="button"
+                accessibilityLabel="Sign out"
+                hitSlop={4}
+                style={({ pressed }) => [styles.signOut, pressed && styles.signOutPressed]}
+              >
+                <Ionicons name="log-out-outline" size={18} color={colors.textSecondary} />
+                <Text style={styles.signOutText}>Sign out</Text>
+              </Pressable>
             </>
           }
         />
@@ -196,6 +200,21 @@ export default function Home() {
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
+  // A visible, well-padded button (not a bare icon) so it reads clearly and is easy to tap,
+  // instead of a small glyph that blends into the header's edge.
+  signOut: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs + 2,
+    minHeight: layout.minTouch,
+    paddingHorizontal: spacing.md,
+    borderRadius: radii.md,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  signOutPressed: { backgroundColor: colors.surfaceMuted },
+  signOutText: { ...typography.heading, fontSize: 14, color: colors.textSecondary },
   content: {
     paddingHorizontal: layout.screenPadding,
     paddingTop: spacing.sm,
