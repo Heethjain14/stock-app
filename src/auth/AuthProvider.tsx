@@ -17,9 +17,19 @@ type AuthContextValue = {
   user: User | null;
   role: Role | null;
   loading: boolean;
+  /** True once `loading` has taken longer than AUTH_TIMEOUT_MS (slow/paused Supabase, bad network). */
+  stuck: boolean;
+  /** Re-runs session + role resolution (e.g. from a "Retry" button when `stuck` is true). */
+  retry: () => void;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
 };
+
+// Supabase auth/PostgREST calls have no built-in timeout, so a paused free-tier project or a
+// flaky connection can otherwise leave the app on an unrecoverable spinner forever. After this
+// long we stop blocking the UI and offer a Retry instead (the original request keeps running in
+// the background and still completes normally if it was just slow).
+const AUTH_TIMEOUT_MS = 10000;
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
@@ -54,6 +64,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [role, setRole] = useState<Role | null>(null);
   const [loading, setLoading] = useState(true);
+  const [stuck, setStuck] = useState(false);
+  const [retryNonce, setRetryNonce] = useState(0);
+  const retry = useCallback(() => {
+    // Reset here (an event handler), not inside the effect body, so the effect never calls
+    // setState synchronously on every run.
+    setLoading(true);
+    setStuck(false);
+    setRetryNonce((n) => n + 1);
+  }, []);
 
   // Supabase RN guidance: only auto-refresh tokens while the app is in the foreground.
   useEffect(() => {
@@ -73,14 +92,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     let active = true;
+    // loading/stuck are already correct for this run: the initial values on first mount, or
+    // whatever retry() just set before bumping retryNonce.
+    const stuckTimer = setTimeout(() => {
+      if (active) setStuck(true);
+    }, AUTH_TIMEOUT_MS);
 
     // Resolve session + role, then mark loading done.
     const apply = async (next: Session | null) => {
       const nextRole = next?.user ? await fetchRole(next.user.id) : null;
       if (!active) return;
+      clearTimeout(stuckTimer);
       setSession(next);
       setRole(nextRole);
       setLoading(false);
+      setStuck(false);
     };
 
     supabase.auth
@@ -98,9 +124,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     return () => {
       active = false;
+      clearTimeout(stuckTimer);
       data.subscription.unsubscribe();
     };
-  }, []);
+  }, [retryNonce]);
 
   const signIn = useCallback(async (email: string, password: string) => {
     let errorMessage: string | null = null;
@@ -121,8 +148,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const value = useMemo<AuthContextValue>(
-    () => ({ session, user: session?.user ?? null, role, loading, signIn, signOut }),
-    [session, role, loading, signIn, signOut],
+    () => ({ session, user: session?.user ?? null, role, loading, stuck, retry, signIn, signOut }),
+    [session, role, loading, stuck, retry, signIn, signOut],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
